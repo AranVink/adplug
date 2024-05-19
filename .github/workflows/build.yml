@@ -51,7 +51,10 @@ jobs:
         if [[ ${{ matrix.compiler }} = djgpp* ]]; then
           # Flex is required, but even though it's in the GitHub runner image, and marked as installed
           # it's still missing some things, see https://github.com/orgs/community/discussions/45029
-          sudo apt install -y libfl2 libfl-dev
+          sudo apt install -y libfl2 libfl-dev software-properties-common
+          # Install dosemu2 for testing
+          add-apt-repository -y ppa:dosemu2/ppa
+          sudo apt install -y dosemu2
 
           if [[ ${{ matrix.compiler }} == "djgpp-2.0.5-gcc-12.2.0" ]]; then
             wget https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2
@@ -117,12 +120,12 @@ jobs:
           #   endeavour, hence just run tests.
           make check ${{ env.compile_opts }}
         elif [[ ${{ matrix.compiler }} = djgpp* ]]; then
-          # Just verify it compiles and installs,
-          # we can't run tests because of binary incompatibility with host OS when cross compiling
-
+          # Setup dosemu as testing tool
+          export LOG_COMPILER="dosemu"
+          export AM_LOG_FLAGS="-dumb $f"
           # Note: compile_opts is not used here, since DJGPP requires stuff like --host for ./configure
           # which will mess with make's command-line parsing
-          make all
+          make check
         elif [[ ${{ runner.os }} == "Linux" ]]; then
           make distcheck ${{ env.compile_opts }}
         fi
