@@ -101,7 +101,7 @@ jobs:
       if: ${{ startsWith(matrix.compiler, 'djgpp') }}
       run: |
         echo 'compile_opts=--host=i586-pc-msdosdjgpp --prefix=/usr/local/djgpp CXXFLAGS=-Wno-deprecated CPPFLAGS=-Wno-deprecated PKG_CONFIG_PATH=/usr/local/djgpp/lib/pkgconfig' >> $GITHUB_ENV
-        echo 'usr/local//djgpp/bin/' >> $GITHUB_PATH
+        echo '/usr/local/djgpp/bin/' >> $GITHUB_PATH
 
     - name: Install libbinio
       run: |
