@@ -134,11 +134,10 @@ jobs:
         fi
 
     - name: Prepare test results (Linux)
-      if: ${{ runner.os == 'Linux' && !startsWith(matrix.compiler, 'djgpp')}}
+      if: ${{ runner.os == 'Linux' }}
       run: make check
 
     - name: Show test results
-      if: ${{ !startsWith(matrix.compiler, 'djgpp')}}
       run: |-
         for I in test/*.log; do
           [ -e "$I" ] || continue
