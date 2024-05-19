@@ -282,14 +282,25 @@ int main(int argc, char *argv[])
   use_subdir = dir_exists(std::string(testdir) + DIR_DELIM TEST_SUBDIR);
 
   // Try all files one by one
-  if(argc > 1) {
-    for(i = 1; i < argc; i++)
-      if(!testplayer(argv[i]))
-	retval = false;
-  } else
+  if(argc == 1) {
     for(i = 0; filelist[i] != NULL; i++)
       if(!testplayer(filelist[i]))
-	retval = false;
+	      retval = false;
 
+  }
+  else if(argc > 1) {
+    char exe_name[] = "playtest.exe";
+    if (!strcmp(argv[1], exe_name)) {
+      // Running inside dosemu, which sets second argument to the executable name
+      for(i = 0; filelist[i] != NULL; i++)
+        if(!testplayer(filelist[i]))
+	        retval = false;
+    } else {
+      // Run for select file
+      for(i = 1; i < argc; i++)
+        if(!testplayer(argv[i]))
+	        retval = false;
+    }
+  }
   return retval ? EXIT_SUCCESS : EXIT_FAILURE;
 }
