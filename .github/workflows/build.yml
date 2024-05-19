@@ -54,7 +54,10 @@ jobs:
           sudo apt install -y libfl2 libfl-dev software-properties-common
           # Install dosemu2 for testing
           add-apt-repository -y ppa:dosemu2/ppa
-          sudo apt install -y dosemu2
+          sudo apt install -y dosemu2 unzip
+          # We need CWSDPMI as well if we want to run any DOS programs.
+          wget https://www.delorie.com/pub/djgpp/current/v2misc/csdpmi7b.zip
+          unzip -j -o "csdpmi7b.zip" "bin/CWSDPMI.EXE" -d ./test
 
           if [[ ${{ matrix.compiler }} == "djgpp-2.0.5-gcc-12.2.0" ]]; then
             wget https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2
