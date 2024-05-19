@@ -134,7 +134,7 @@ jobs:
         fi
 
     - name: Prepare test results (Linux)
-      if: ${{ runner.os == 'Linux' }}
+      if: ${{ runner.os == 'Linux' && !startsWith(matrix.compiler, 'djgpp')}}
       run: make check
 
     - name: Show test results
