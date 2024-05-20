@@ -30,6 +30,8 @@
 
 #ifdef MSDOS
 #	define DIR_DELIM	"\\"
+#elif DJGPP
+#	define DIR_DELIM	"\\"
 #else
 #	define DIR_DELIM	"/"
 #endif
@@ -232,6 +234,8 @@ static bool testplayer(const std::string filename)
   std::string	fn = std::string(testdir) + DIR_DELIM + filename;
 #ifdef __WATCOMC__
   std::string	testfn = tmpnam(NULL);
+#elif DJGPP
+  std::string	testfn = tmpnam(NULL);
 #else
   std::string	testfn = filename + ".test";
 #endif
@@ -281,26 +285,23 @@ int main(int argc, char *argv[])
 
   use_subdir = dir_exists(std::string(testdir) + DIR_DELIM TEST_SUBDIR);
 
+#ifdef DJGPP
+  // DJGPP/DosEMU has weird behaviour when parsing command line arguments (adds path and name of executable as seperate vars)
+  // Just go through the list
+  std::cout << "Warning: Running test with DJGPP, ignoring command line arguments, executing all test files!\n";
+  for(i = 0; filelist[i] != NULL; i++)
+    if(!testplayer(filelist[i]))
+	    retval = false;
+#else
   // Try all files one by one
-  if(argc == 1) {
+  if(argc > 1) {
+    for(i = 1; i < argc; i++)
+      if(!testplayer(argv[i]))
+	retval = false;
+  } else
     for(i = 0; filelist[i] != NULL; i++)
       if(!testplayer(filelist[i]))
 	      retval = false;
-
-  }
-  else if(argc > 1) {
-    char exe_name[] = "playtest.exe";
-    if (!strcmp(argv[1], exe_name)) {
-      // Running inside dosemu, which sets second argument to the executable name
-      for(i = 0; filelist[i] != NULL; i++)
-        if(!testplayer(filelist[i]))
-	        retval = false;
-    } else {
-      // Run for select file
-      for(i = 1; i < argc; i++)
-        if(!testplayer(argv[i]))
-	        retval = false;
-    }
-  }
+#endif
   return retval ? EXIT_SUCCESS : EXIT_FAILURE;
 }

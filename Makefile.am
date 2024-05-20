@@ -236,9 +236,9 @@ doc/adplugdb.1: $(top_srcdir)/doc/adplugdb.1.in
 #########
 
 check_PROGRAMS = \
-	test/playtest \
 	test/emutest \
 	test/crctest \
+	test/playtest \
 	test/strstest
 
 test_playtest_SOURCES = test/playertest.cpp

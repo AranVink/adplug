@@ -459,18 +459,19 @@ int main(int argc, char *argv[])
 		for (int i = 0; i < filecount; i++)
 			fail |= !test_wrapper(cmd, dir + filelist[i]);
 	} else {
-		char exe_name[] = "strstest.exe";
-		if (!strcmp(argv[1], exe_name)) {
-			// Running inside dosemu, which sets second argument for the executable name
-			for (int i = 0; i < filecount; i++)
-				fail |= !test_wrapper(cmd, dir + filelist[i]);
-		} else {
-			// Test the file(s) on the command line
-			for (int i = 1; i < argc; i++)
-				fail |= !test_wrapper(cmd, strstr(argv[i], DIR_DELIM) ||
-					access(argv[i], F_OK) ? argv[i] : dir + argv[i]);
-		}
-	}
+#ifdef DJGPP
+		// DJGPP/DosEMU has weird behaviour when parsing command line arguments (adds path and name of executable as seperate vars)
+		// Just go through the list
+		std::cout << "Warning: Running test with DJGPP, ignoring command line arguments, executing all test files!\n";
+		for (int i = 0; i < filecount; i++)
+			fail |= !test_wrapper(cmd, dir + filelist[i]);
+#else
+		// Test the file(s) on the command line
+		for (int i = 1; i < argc; i++)
+			fail |= !test_wrapper(cmd, strstr(argv[i], DIR_DELIM) ||
+				access(argv[i], F_OK) ? argv[i] : dir + argv[i]);
+#endif
+    }
 
 	return fail ? EXIT_FAILURE : EXIT_SUCCESS;
 }

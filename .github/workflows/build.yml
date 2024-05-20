@@ -128,7 +128,8 @@ jobs:
           export AM_LOG_FLAGS="-dumb $f"
           # Note: compile_opts is not used here, since DJGPP requires stuff like --host for ./configure
           # which will mess with make's command-line parsing
-          make check
+          # -j1 is there to fix race conditions when building checks and then running dosemu
+          make -j1 check
         elif [[ ${{ runner.os }} == "Linux" ]]; then
           make distcheck ${{ env.compile_opts }}
         fi
