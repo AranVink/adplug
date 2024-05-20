@@ -471,7 +471,7 @@ int main(int argc, char *argv[])
 			fail |= !test_wrapper(cmd, strstr(argv[i], DIR_DELIM) ||
 				access(argv[i], F_OK) ? argv[i] : dir + argv[i]);
 #endif
-    }
+	}
 
 	return fail ? EXIT_FAILURE : EXIT_SUCCESS;
 }

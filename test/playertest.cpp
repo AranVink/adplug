@@ -30,8 +30,6 @@
 
 #ifdef MSDOS
 #	define DIR_DELIM	"\\"
-#elif DJGPP
-#	define DIR_DELIM	"\\"
 #else
 #	define DIR_DELIM	"/"
 #endif
