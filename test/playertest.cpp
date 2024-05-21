@@ -153,7 +153,7 @@ public:
   {
     if(reg > 255 || val > 255 || reg < 0 || val < 0)
       std::cerr << "Warning: The player is writing data out of range! (reg = "
-		<< std::hex << reg << ", val = " << val << ")\n";
+    << std::hex << reg << ", val = " << val << ")" << std::endl;
     if(!f) return;
     fprintf(f, "%x <- %x\n", reg, val);
   }
@@ -285,21 +285,18 @@ int main(int argc, char *argv[])
 
 #ifdef DJGPP
   // DJGPP/DosEMU has weird behaviour when parsing command line arguments (adds path and name of executable as seperate vars)
-  // Just go through the list
-  std::cout << "Warning: Running test with DJGPP, ignoring command line arguments, executing all test files!\n";
-  for(i = 0; filelist[i] != NULL; i++)
-    if(!testplayer(filelist[i]))
-	    retval = false;
-#else
+  // Don't parse the rest by setting argument count to 1
+  std::cout << "Warning: Running test with DJGPP, ignoring command line arguments, executing all test files!" << std::endl;
+  argc = 1;
+#endif
   // Try all files one by one
   if(argc > 1) {
     for(i = 1; i < argc; i++)
       if(!testplayer(argv[i]))
-	retval = false;
+  retval = false;
   } else
     for(i = 0; filelist[i] != NULL; i++)
       if(!testplayer(filelist[i]))
-	      retval = false;
-#endif
+        retval = false;
   return retval ? EXIT_SUCCESS : EXIT_FAILURE;
 }
