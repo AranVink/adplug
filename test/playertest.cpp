@@ -293,10 +293,11 @@ int main(int argc, char *argv[])
   if(argc > 1) {
     for(i = 1; i < argc; i++)
       if(!testplayer(argv[i]))
-  retval = false;
-  } else
+        retval = false;
+  } else {
     for(i = 0; filelist[i] != NULL; i++)
       if(!testplayer(filelist[i]))
         retval = false;
+  }
   return retval ? EXIT_SUCCESS : EXIT_FAILURE;
 }
