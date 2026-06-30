@@ -28,7 +28,7 @@ jobs:
       uses: lukka/get-cmake@latest
 
     - name: Find MSVC (on Windows)
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: ilammy/msvc-dev-cmd@v1.13
 
     - name: Checkout libbinio repository
       uses: actions/checkout@v7
@@ -78,6 +78,6 @@ jobs:
 
       # Upload SARIF file to GitHub Code Scanning Alerts
     - name: Upload SARIF to GitHub
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{steps.run-analysis.outputs.sarif}}
