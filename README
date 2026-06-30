@@ -56,7 +56,7 @@ If you checked out from git, please first run:
 to generate the build cruft and get the configure script. Oh, and did I
 mention you need recent versions of autoconf, automake and libtool?
 
-Windows git:
+Windows Git:
 ------------
 If you checked out from git, you will need to copy src\version.h.in to
 src\version.h and replace @VERSION@ with a proper version number.
