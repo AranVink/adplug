@@ -25,6 +25,8 @@ jobs:
             os: ubuntu-latest
           - compiler: powerpcle64-gcc # To test compatibility with little-endian powerpc
             os: ubuntu-latest
+          - compiler: gcc
+            os: ubuntu-26.04-arm
 
       fail-fast: false
 
