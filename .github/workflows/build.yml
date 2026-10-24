@@ -25,6 +25,8 @@ jobs:
             os: ubuntu-latest
           - compiler: powerpcle64-gcc # To test compatibility with little-endian powerpc
             os: ubuntu-latest
+          - compiler: armv7-gcc # To test compatibility with 32-bit ARM
+            os: ubuntu-latest
           - compiler: gcc
             os: ubuntu-26.04-arm
 
@@ -86,6 +88,9 @@ jobs:
         fi
         if [[ ${{ matrix.compiler }} = powerpcle64-gcc ]]; then
           sudo apt install -y g++-powerpc64le-linux-gnu gcc-powerpc64le-linux-gnu qemu-user
+        fi
+        if [[ ${{ matrix.compiler }} = armv7-gcc ]]; then
+          sudo apt install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf qemu-user
         fi
 
     - name: Install packages (macOS)
@@ -174,6 +179,14 @@ jobs:
         echo -e '#!/bin/sh\nexec qemu-ppc -L /usr/local/powerpc64le -L /usr/powerpc64le-linux-gnu "$@"' > qemu-wrapper.sh
         chmod 755 qemu-wrapper.sh
 
+    - name: Set ARMv7-GCC environment
+      if: ${{ matrix.compiler == 'armv7-gcc' }}
+      run: |
+        echo 'compile_opts=--host=arm-linux-gnueabihf --prefix=/usr/local/arm-linux-gnueabihf' >> $GITHUB_ENV
+        echo 'compile_env=PKG_CONFIG_PATH=/usr/local/arm-linux-gnueabihf/lib/pkgconfig MAKE="make stresstest_wrapper=./qemu-wrapper.sh"' >> $GITHUB_ENV
+        printf '#!/bin/sh\nexec qemu-arm -L /usr/arm-linux-gnueabihf "$@"\n' > qemu-wrapper.sh
+        chmod 755 qemu-wrapper.sh
+
     - name: Install libbinio
       run: |
         owner="${GITHUB_REPOSITORY%/*}"
@@ -215,6 +228,9 @@ jobs:
         elif  [[ ${{ matrix.compiler }} == "powerpc64le-gcc" ]]; then
           make test/crctest test/emutest test/playtest test/strstest ${{ env.compile_env }} ${{ env.adplug_env }}
           sed -e 's/exec "/exec qemu-ppc -L \/usr\/local\/powerpc64le -L \/usr\/powerpc64le-linux-gnu "/' -i test/crctest test/emutest test/playtest test/strstest
+        elif [[ ${{ matrix.compiler }} == "armv7-gcc" ]]; then
+          make test/crctest test/emutest test/playtest test/strstest ${{ env.compile_env }} ${{ env.adplug_env }}
+          sed -e 's/exec "/exec qemu-arm -L \/usr\/arm-linux-gnueabihf "/' -i test/crctest test/emutest test/playtest test/strstest
         fi
 
     - name: Prepare MinGW runtime DLLs

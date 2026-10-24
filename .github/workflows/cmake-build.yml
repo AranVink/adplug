@@ -12,10 +12,24 @@ jobs:
       fail-fast: false
       matrix:
         os: [ 'windows-latest', 'ubuntu-latest', 'macos-latest', 'ubuntu-26.04-arm' ]
+        arch: [ native, armv7 ]
+        exclude:
+          - os: windows-latest
+            arch: armv7
+          - os: macos-latest
+            arch: armv7
+          - os: ubuntu-26.04-arm
+            arch: armv7
 
     runs-on: ${{matrix.os}}
 
     steps:
+    - name: Install ARMv7 cross-compilation tools
+      if: ${{ matrix.arch == 'armv7' }}
+      run: |
+        sudo apt update
+        sudo apt install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf qemu-user
+
     - name: Find libbinio repository
       shell: bash
       run: |
@@ -47,6 +61,7 @@ jobs:
         fetch-depth: 0
 
     - name: Build libbinio
+      if: ${{ matrix.arch == 'native' }}
       uses: lukka/run-cmake@v10
       env:
         VCPKG_ROOT:
@@ -57,10 +72,12 @@ jobs:
         buildPreset: '${{env.libbinio_PRESET}}'
 
     - name: Install libbinio
+      if: ${{ matrix.arch == 'native' }}
       working-directory: 'libbinio/out/build/${{env.libbinio_PRESET}}/'
       run: cmake --install .
 
     - name: Build adplug
+      if: ${{ matrix.arch == 'native' }}
       uses: lukka/run-cmake@v10
       env:
         VCPKG_ROOT:
@@ -70,3 +87,29 @@ jobs:
         configurePreset: default
         buildPreset: default
         testPreset: default
+
+    - name: Build and test ARMv7
+      if: ${{ matrix.arch == 'armv7' }}
+      shell: bash
+      run: |
+        armv7_cmake_args=(
+          -DCMAKE_SYSTEM_NAME=Linux
+          -DCMAKE_SYSTEM_PROCESSOR=armv7
+          -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc
+          -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++
+          '-DCMAKE_CROSSCOMPILING_EMULATOR=qemu-arm;-L;/usr/arm-linux-gnueabihf'
+        )
+
+        cmake -S libbinio -B libbinio/out/build/default -G Ninja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_INSTALL_PREFIX="${GITHUB_WORKSPACE}/libbinio/out/install/default" \
+          "${armv7_cmake_args[@]}"
+        cmake --build libbinio/out/build/default
+        cmake --install libbinio/out/build/default
+
+        cmake -S adplug -B adplug/out/build/default -G Ninja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -Dlibbinio_ROOT="${GITHUB_WORKSPACE}/libbinio/out/install/default" \
+          "${armv7_cmake_args[@]}"
+        cmake --build adplug/out/build/default
+        ctest --test-dir adplug/out/build/default --output-on-failure
