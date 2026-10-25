@@ -92,6 +92,9 @@ jobs:
       if: ${{ matrix.arch == 'armv7' }}
       shell: bash
       run: |
+        export QEMU_LD_PREFIX=/usr/arm-linux-gnueabihf
+        test -e "$QEMU_LD_PREFIX/lib/ld-linux-armhf.so.3"
+
         armv7_cmake_args=(
           -DCMAKE_SYSTEM_NAME=Linux
           -DCMAKE_SYSTEM_PROCESSOR=armv7
