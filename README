@@ -13,22 +13,33 @@ required for playback.
 
 Supported platforms:
 --------------------
-AdPlug currently is tested to compile and run well on the following
-platforms and compilers:
+CI currently builds and tests AdPlug with the following configurations.
 
-Platform                Operating System        Compiler
---------                ----------------        --------
-IA32 - x86              MS-DOS 6.22             DJGPP 2.0.5 / GCC 12.2.0
-                        MS-DOS 6.22             DJGPP 2.0.5 / GCC 4.8.5
-x86_64                  Linux                   GCC 4.8
-                        Linux                   GCC 11.3.0
-                        Linux                   CLANG 10.0.1
-                        MACOS                   GCC 14.0.0
-                        MACOS                   CLANG 14.0.0
+Build system   Target platform / operating system         Compiler / test environment
+------------   -----------------------------------        --------------------------
+Autotools      Linux on x86_64 (Ubuntu 24.04)             GCC 13.3.0, Clang 18.1.3, GCC 4.8.5
+Autotools      Linux on ARMv7 (cross-compiled)            ARM GNU GCC; tests run with QEMU
+Autotools      Linux on ARM64 (Ubuntu 26.04)              GCC 15.2.0
+Autotools      Linux on PowerPC (32-bit, big-endian)      PowerPC GCC; tests run with QEMU
+Autotools      Linux on PowerPC64 (big-endian)            PowerPC64 GCC; build only
+Autotools      Linux on PowerPC64 (little-endian)         PowerPC64LE GCC; tests run with QEMU
+Autotools      macOS 26 (ARM64)                           Apple Clang 21.0.0 (`gcc` and `clang` jobs)
+Autotools      Windows x86_64 (cross-compiled on Linux)   MinGW-w64 GCC; tests run with Wine
+Autotools      MS-DOS (i586)                              DJGPP 2.0.5 / GCC 12.2.0; tests run with dosemu
+CMake          Linux on x86_64 (Ubuntu 24.04)             GCC 13.3.0
+CMake          Linux on ARM64 (Ubuntu 26.04)              GCC 15.2.0
+CMake          Linux on ARMv7 (cross-compiled)            ARM GNU GCC; tests run with QEMU
+CMake          Windows x86_64                             MSVC
+CMake          macOS 26 (ARM64)                           Apple Clang 21.0.0
 
-This list only incorporates platforms on which this release of AdPlug
-has been tested successfully. This and earlier versions of AdPlug may
-and did run on a variety of other platforms as well.
+Compiler versions for the hosted runner images are listed in GitHub's
+[Ubuntu 24.04](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md),
+[Ubuntu 26.04 ARM64](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2604-Arm64-Readme.md),
+and [macOS 26 ARM64](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md)
+runner image documentation. The `gcc` command on macOS selects Apple Clang;
+the separately installed Homebrew GCC versions are not selected by these jobs.
+
+Other configurations may work, but are not covered by the CI workflows.
 
 The library builds as dynamic and/or static link library, depending on
 the facilities provided by the host OS. These are autodetected.
