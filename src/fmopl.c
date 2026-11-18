@@ -1018,7 +1018,8 @@ static void OPLWriteReg(FM_OPL *OPL, int r, int v)
 /*******************************************************************************/
 
 /* ---------- update one of chip ----------- */
-void YM3812UpdateOne(FM_OPL *OPL, INT16 *buffer, int length)
+static void YM3812Update(FM_OPL *OPL, INT16 *buffer, int length,
+			 INT16 *channels)
 {
 	int i;
 	int data;
@@ -1028,17 +1029,28 @@ void YM3812UpdateOne(FM_OPL *OPL, INT16 *buffer, int length)
 	UINT8 rhythm = OPL->rhythm&0x20;
 	OPL_CH *CH,*R_CH;
 
+	if(channels)
+		memset(channels, 0, 9 * length * sizeof(*channels));
+
 	R_CH = rhythm ? &OPL->P_CH[6] : &OPL->P_CH[9];
 	for( i=0; i < length ; i++ )
 	{
+		int channel;
 		/*            channel A         channel B         channel C      */
 		/* LFO */
 		OPL->ams = OPL->ams_table[(amsCnt+=OPL->amsIncr)>>AMS_SHIFT];
 		OPL->vib = OPL->vib_table[(vibCnt+=OPL->vibIncr)>>VIB_SHIFT];
 		OPL->outd[0] = 0;
 		/* FM part */
-		for(CH=OPL->P_CH ; CH < R_CH ; CH++)
+		for(CH=OPL->P_CH, channel=0 ; CH < R_CH ; CH++, channel++)
+		{
+			int channel_output = OPL->outd[0];
 			OPL_CALC_CH(OPL, CH);
+			if(channels)
+				channels[channel*length+i] =
+					(INT16)(Limit(OPL->outd[0] - channel_output,
+						      OPL_MAXOUT, OPL_MINOUT) >> OPL_OUTSB);
+		}
 		/* Rythm part */
 		if(rhythm)
 			OPL_CALC_RH(OPL, OPL->P_CH);
@@ -1058,6 +1070,17 @@ void YM3812UpdateOne(FM_OPL *OPL, INT16 *buffer, int length)
 		fprintf(opl_dbg_fp,"%c%c%c",0x20+opl_dbg_chip,length&0xff,length/256);
 	}
 #endif
+}
+
+void YM3812UpdateOne(FM_OPL *OPL, INT16 *buffer, int length)
+{
+	YM3812Update(OPL, buffer, length, NULL);
+}
+
+void YM3812UpdateOneChannels(FM_OPL *OPL, INT16 *buffer, int length,
+			     INT16 *channels)
+{
+	YM3812Update(OPL, buffer, length, channels);
 }
 #endif /* (BUILD_YM3812 || BUILD_YM3526) */
 

@@ -65,15 +65,69 @@ static bool check_emu_output(CEmuopl *emu)
   return (nonull && no10k && nom10k);
 }
 
+static bool check_channel_metrics()
+{
+  CEmuopl emu(8000, true, false);
+  short buffer[BUF_SIZE];
+  CEmuopl::Adsr adsr;
+
+  if(emu.get_channel_data(0, 0) || emu.get_channel_samples() != 0)
+    return false;
+
+  emu.set_channel_data_enabled(true);
+  emu.init();
+  emu.write(0x20, 1);
+  emu.write(0x40, 0x10);
+  emu.write(0x60, 0xa5);
+  emu.write(0x80, 0xc7);
+  emu.write(0x23, 1);
+  emu.write(0x43, 0);
+  emu.write(0x63, 0x32);
+  emu.write(0x83, 0x4d);
+  emu.write(0xa0, 0x98);
+  emu.write(0xb0, 0x31);
+  emu.update(buffer, BUF_SIZE);
+
+  if(emu.get_channel_samples() != BUF_SIZE)
+    return false;
+
+  const short *channel0 = emu.get_channel_data(0, 0);
+  const short *channel1 = emu.get_channel_data(0, 1);
+  if(!channel0 || !channel1)
+    return false;
+
+  bool channel0_nonzero = false;
+  for(int i = 0; i < BUF_SIZE; i++) {
+    if(channel0[i] != 0)
+      channel0_nonzero = true;
+    if(channel1[i] != 0)
+      return false;
+  }
+
+  if(!channel0_nonzero ||
+     !emu.get_channel_adsr(0, 0, 0, adsr) ||
+     adsr.attack != 10 || adsr.decay != 5 ||
+     adsr.sustain != 12 || adsr.release != 7)
+    return false;
+
+  if(!emu.get_channel_adsr(0, 0, 1, adsr) ||
+     adsr.attack != 3 || adsr.decay != 2 ||
+     adsr.sustain != 4 || adsr.release != 13)
+    return false;
+
+  return !emu.get_channel_adsr(2, 0, 0, adsr) &&
+	 !emu.get_channel_data(0, 9);
+}
+
 /***** Main program *****/
 
 int main(int argc, char *argv[])
 {
-  bool	retval = true;
+  bool	retval = check_channel_metrics();
 
   {
     CEmuopl emu(8000, true, false);
-    retval = check_emu_output(&emu);
+    retval = check_emu_output(&emu) && retval;
   }
 
   return retval ? EXIT_SUCCESS : EXIT_FAILURE;

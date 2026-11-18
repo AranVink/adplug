@@ -419,6 +419,31 @@ For easier and more uniform handling of the different OPL classes, the
 subclasses that do not support read back of the audio data (and for
 which this is not necessary), the method is empty and does nothing.
 
+The @code{CEmuopl} emulator can also provide the individual mono sample
+data for each OPL2 channel. Enable capture with
+@code{set_channel_data_enabled(true)}. After calling @code{update()}, use
+@code{get_channel_data(@var{chip}, @var{channel})} to get a pointer to
+the channel's samples and @code{get_channel_samples()} for the number
+of samples in that block. The sample pointer remains valid until the
+next call to @code{update()} or @code{init()}. Chip numbers are
+@samp{0} or @samp{1}, and channel numbers are @samp{0} through
+@samp{8}. The samples are mono signed 16-bit values, even when the
+emulator's main output is stereo. The readback contains the most recent
+rendered block; it does not alter the normal mixed output. Capture is
+disabled by default and can be switched off with
+@code{set_channel_data_enabled(false)}.
+
+The currently programmed attack, decay, sustain and release register
+values for either operator of a channel can be retrieved with
+@code{get_channel_adsr(@var{chip}, @var{channel}, @var{op}, @var{adsr})}.
+Operator @samp{0} is the modulator and @samp{1} is the carrier. Each
+field in the returned @code{CEmuopl::Adsr} is the corresponding raw
+4-bit OPL register value (0 through 15), not a duration in seconds.
+These values reflect the channel's live register state and therefore
+track the instrument currently programmed during playback. The method
+returns @samp{false} when the requested chip, channel or operator is
+out of range.
+
 The volume analyzing hardware OPL class @code{CAnalopl} also has some
 data readback methods:
 
